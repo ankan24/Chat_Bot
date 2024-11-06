@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chatbot</title>
+    <link rel="icon" href="https://imgs.search.brave.com/k1_KeRru3qNgpTGaCCPOwqC2930uQ3eaSjcygoeYG5c/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS1waG90/by9jaGF0LWJvdC1s/b2dvLWRlc2lnbi1j/b25jZXB0XzEyNzY5/NDEtNDMxNTIuanBn/P3NlbXQ9YWlzX2h5/YnJpZA">
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
+</head>
+<body>
+
+    <!-- Chatbot button -->
+    <div id="chatbotButton" class="chatbot-btn">Chat with us!</div>
+
+    <!-- Chatbot window -->
+    <div id="chatbotWindow" class="chatbot-window">
+        <div class="chat-header">
+            <span>AG Chatbot</span>
+            <button id="closeBtn" class="close-btn">X</button>
+        </div>
+        <div id="chatContent" class="chat-content"></div>
+        <input id="userInput" type="text" placeholder="Type your message..." class="chat-input">
+        <button id="sendBtn" class="send-btn">Send</button>
+    </div>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        // Use your actual API_KEY
+        const API_KEY = 'AIzaSyAsGjgf-FGJroJud07ZpbmA1xOLnBrs1lw';
+
+        // Initialize the GoogleGenerativeAI class with your API key
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = await genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        document.getElementById('chatbotButton').addEventListener('click', () => {
+            document.getElementById('chatbotWindow').classList.add('open');
+        });
+
+        document.getElementById('closeBtn').addEventListener('click', () => {
+            document.getElementById('chatbotWindow').classList.remove('open');
+        });
+
+        // Function to handle sending messages
+        document.getElementById('sendBtn').addEventListener('click', async () => {
+            sendMessage();
+        });
+
+        document.getElementById('userInput').addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Send user message and get a response from the API
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput').value;
+            if (userInput.trim() === '') return;
+
+            appendMessage('User', userInput);
+            document.getElementById('userInput').value = '';
+
+            try {
+                // Use the Google Generative AI model to get a response
+                const result = await model.generateContent(userInput);
+                const botResponse = result.response.text();  // Adjust based on the actual response format
+                appendMessage('Bot', botResponse);
+            } catch (error) {
+                appendMessage('Bot', 'Sorry, something went wrong.');
+                console.error('Error:', error);
+            }
+        }
+
+        // Function to append messages to the chat window
+        function appendMessage(sender, message) {
+            const chatContent = document.getElementById('chatContent');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${sender}: ${message}`;
+            chatContent.appendChild(messageElement);
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+    </script>
+</body>
+</html>
